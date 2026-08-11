@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Territory – Interactive Prototype</title>
+<style>
+  :root{
+    --purple:#4d148c;
+    --purple-2:#5f249f;
+    --orange:#ff6600;
+    --ink:#1f1f1f;
+    --muted:#666;
+    --line:#d8dce3;
+    --soft:#f7f8fa;
+    --soft2:#f1f3f5;
+    --danger:#e44;
+    --shadow:0 10px 28px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+  button,input{font:inherit}
+  button{cursor:pointer}
+  .app{min-width:1050px}
+  .utility{
+    height:64px;display:flex;align-items:center;padding:0 48px;
+    border-bottom:1px solid #eceef2;gap:28px;background:#fff
+  }
+  .brand{font-weight:900;font-size:28px;letter-spacing:-1.5px;white-space:nowrap}
+  .fed{color:var(--purple)} .ex{color:var(--orange)}
+  .search{margin:auto;width:310px;position:relative}
+  .search input{width:100%;height:36px;border:1px solid #d6dbe2;border-radius:5px;padding:0 14px 0 36px}
+  .search:before{content:"⌕";position:absolute;left:13px;top:7px;color:#555;font-size:20px}
+  .icons{display:flex;gap:18px;align-items:center;color:#45484e;font-size:18px}
+  .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#ef8d62,#4d148c);border:2px solid #fff;box-shadow:0 0 0 1px #ccc}
+  .nav{
+    height:48px;display:flex;align-items:end;padding:0 48px;border-bottom:1px solid #dfe2e7;background:#fff
+  }
+  .appname{display:flex;align-items:center;gap:10px;margin-right:26px;padding-bottom:13px;font-size:18px}
+  .gridicon{font-size:18px;line-height:1}
+  .navitem{height:48px;padding:16px 14px 13px;font-size:13px;color:#172033;white-space:nowrap}
+  .navitem.active{color:var(--purple);border-bottom:3px solid var(--purple);font-weight:650}
+  .workspace{padding:0 48px 40px}
+  .titlebar{
+    height:52px;display:flex;align-items:center;border-bottom:1px solid #e7e9ed;
+    background:linear-gradient(#fff,#fbfbfc)
+  }
+  .titlebar h1{font-size:23px;font-weight:500;margin:0}
+  .updated{margin-left:auto;font-size:11px;color:#51555b}
+  .title-actions{display:flex;gap:8px;margin-left:16px}
+  .iconbtn{
+    width:35px;height:35px;border:1px solid #cfd4dc;border-radius:5px;background:#fff;color:#4b5159
+  }
+  .tabs{height:48px;display:flex;gap:18px;align-items:end;border-bottom:0;background:#fff;padding-left:14px}
+  .tab{
+    min-width:145px;height:45px;padding:16px 18px 11px;border:0;border-bottom:3px solid #ddd;background:#fff;
+    color:#333;font-size:12px
+  }
+  .tab.active{color:var(--purple);border-bottom-color:var(--purple);font-weight:650}
+  .filter-zone{padding:15px 10px 0}
+  .prompt{font-size:13px;font-weight:700;margin-bottom:8px}
+  .filter-row{display:flex;align-items:center;gap:12px}
+  .filter-button{
+    height:42px;border:1px solid #c8ced7;border-radius:6px;background:#fff;padding:0 15px;
+    display:flex;align-items:center;gap:10px;font-weight:650;box-shadow:0 1px 1px rgba(0,0,0,.02)
+  }
+  .filter-symbol{color:var(--purple);font-size:20px;transform:rotate(90deg)}
+  .count{
+    display:inline-flex;min-width:20px;height:20px;padding:0 6px;align-items:center;justify-content:center;
+    border-radius:4px;background:var(--purple);color:#fff;font-size:12px
+  }
+  .chev{font-size:18px;margin-left:3px;display:inline-flex;align-items:center;justify-content:center;height:100%;line-height:1}
+  .active-filters{
+    display:none;align-items:center;border:1px solid #d8dce3;height:42px;border-radius:6px;background:#fff;padding:0 10px;gap:8px
+  }
+  .active-filters.show{display:flex}
+  .active-label{font-size:12px;font-weight:650;margin-right:3px}
+  .pill{
+    background:#f4f5f7;border:1px solid #e1e4e8;border-radius:18px;padding:6px 10px;font-size:11px;color:#4c5259;
+    white-space:nowrap
+  }
+  .pill .x{margin-left:6px;color:#777;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+  .pill .x:hover{color:#222}
+  .clear{color:var(--purple);font-size:11px;background:transparent;border:0;font-weight:650}
+  .panel{
+    display:none;margin-top:8px;width:min(900px,88vw);border:1px solid #d8dce3;border-radius:6px;background:#fff;
+    box-shadow:var(--shadow);overflow:hidden
+  }
+  .panel.open{display:block;animation:drop .16s ease-out}
+  @keyframes drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+  .panel-top{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid #e4e7eb}
+  .panel-search{width:270px;height:32px;border:1px solid #cfd5dd;border-radius:4px;padding:0 10px}
+  .panel-actions{margin-left:auto;display:flex;align-items:center;gap:18px;font-size:12px}
+  .linkbtn{border:0;background:none;color:var(--purple);font-weight:650}
+  .apply{
+    height:32px;min-width:112px;padding:0 16px;background:var(--purple);color:#fff;border:0;border-radius:4px;font-weight:650;font-size:12px
+  }
+  .group{border-bottom:1px solid #e4e7eb}
+  .panel-bottom{display:flex;justify-content:flex-end;padding:10px 12px;background:#fff;border-top:1px solid #e4e7eb}
+  .group-head{height:41px;display:flex;align-items:center;padding:0 14px;gap:12px;font-size:13px}
+  .group-head:hover{background:#fafafa}
+  .gicon{width:22px;height:22px;color:#59606b;display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px}
+  .gicon svg{width:18px;height:18px;display:block;fill:currentColor}
+  .filter-symbol{color:var(--purple);width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;transform:none}
+  .filter-symbol svg{width:18px;height:18px;display:block;fill:currentColor}
+  .sel{margin-left:auto;font-size:11px;color:#555}
+  .group-body{display:none;padding:8px 16px 14px 50px;background:#fafbfc}
+  .group.expanded .group-body{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .option{font-size:12px;display:flex;align-items:center;gap:7px}
+  .option input{accent-color:var(--purple)}
+  .content{margin-top:30px;padding:0 0 40px}
+  .empty{height:390px}
+  .dashboard{display:none}
+  .dashboard.show{display:block}
+  .section-title{text-align:center;color:var(--purple);font-weight:800;font-size:16px;margin-bottom:18px}
+  .metric-tabs{display:flex;justify-content:center;gap:7px;margin-bottom:26px}
+  .metric-tab{
+    min-width:92px;height:34px;border:1px solid #d5d9e0;background:#fff;color:var(--purple);font-size:11px
+  }
+  .metric-tab.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+  .dashgrid{display:grid;grid-template-columns:170px 1fr 1fr;gap:34px;align-items:start}
+  .statcard{background:#fafafa;border:1px solid #f1f1f1;margin-bottom:0;padding:17px 12px;text-align:center;height:74px}
+  .statbig{font-size:25px;color:#253049}
+  .statlabel{font-size:11px;color:#666;margin-top:5px}
+  .negative{color:#e34c4c}
+  .chart-title{font-size:12px;color:var(--purple);font-weight:700;margin:0 0 10px 4px}
+  .legend{font-size:10px;color:#555;margin:0 0 7px 70px}
+  .chart{height:230px;border-left:1px solid #eee;border-bottom:1px solid #eee;position:relative;padding:18px 10px 0 20px;
+    background:repeating-linear-gradient(to bottom,#fff 0,#fff 44px,#eceff3 45px,#fff 46px)}
+  .bars{height:100%;display:flex;align-items:end;gap:10px}
+  .bar{width:18px;background:var(--purple);position:relative}
+  .bar span{position:absolute;bottom:5px;left:3px;color:#fff;font-size:9px;writing-mode:vertical-rl;transform:rotate(180deg)}
+  .growth .bar.neg{background:#e8493f}
+  .growth .bar.pos{background:var(--purple)}
+  .toast{
+    position:fixed;right:24px;bottom:24px;background:#222;color:white;border-radius:8px;padding:12px 16px;
+    font-size:13px;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none
+  }
+  .toast.show{opacity:1;transform:translateY(0)}
+  .prototype-note{
+    position:fixed;left:20px;bottom:20px;background:#fff;border:1px solid #d8dce3;border-radius:8px;
+    padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.10);font-size:11px;color:#4d5560
+  }
+  .prototype-note b{color:var(--purple)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="utility">
+    <div class="brand"><span class="fed">Fed</span><span class="ex">Ex</span><span style="font-size:10px;color:#888">®</span></div>
+    <div class="search"><input placeholder="Search..." /></div>
+    <div class="icons"><span>☆</span><span>⊕</span><span>◈</span><span>?</span><span>⚙</span><span>●</span><span class="avatar"></span></div>
+  </div>
+
+  <div class="nav">
+    <div class="appname"><span class="gridicon">⠿</span><span>iSell</span></div>
+    <div class="navitem">Home</div>
+    <div class="navitem">Customers⌄</div>
+    <div class="navitem">Opportunities/Risks⌄</div>
+    <div class="navitem">Leads/CR⌄</div>
+    <div class="navitem">Contacts⌄</div>
+    <div class="navitem">Calendar⌄</div>
+    <div class="navitem">Cases⌄</div>
+    <div class="navitem">Reports⌄</div>
+    <div class="navitem active">MyTerritory</div>
+    <div class="navitem">More⌄</div>
+  </div>
+
+  <div class="workspace">
+    <div class="titlebar">
+      <h1>My Territory</h1>
+      <div class="updated">Data updated: Yesterday at 4:15 AM</div>
+      <div class="title-actions">
+        <button class="iconbtn">◉</button><button class="iconbtn">▤</button><button class="iconbtn">↗</button>
+        <button class="iconbtn">⇩</button><button class="iconbtn">●</button><button class="iconbtn">▥</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active">Main Overview</button>
+      <button class="tab">Revenue Analytics</button>
+      <button class="tab">Volume &amp; Yield Analytics</button>
+      <button class="tab">Team Performance</button>
+      <button class="tab">Marketing &amp; DDC Customers</button>
+    </div>
+
+    <div class="filter-zone">
+      <div class="prompt">Select filters to view your territory data</div>
+      <div class="filter-row">
+        <button id="filterBtn" class="filter-button">
+          <span class="filter-symbol" aria-hidden="true">
+  <svg viewBox="0 0 24 24"><path d="M3.5 5.25c0-.69.56-1.25 1.25-1.25h14.5a1.25 1.25 0 0 1 .98 2.03l-5.48 6.85v4.87c0 .47-.27.9-.69 1.11l-3 1.5A1.25 1.25 0 0 1 9.25 19.25v-6.37L3.77 6.03a1.25 1.25 0 0 1-.27-.78Z"/></svg>
+</span> Filters <span id="filterCount" class="count" style="display:none">3</span><span class="chev">⌄</span>
+        </button>
+        <div id="activeFilters" class="active-filters">
+          <span class="active-label">Active Filters:</span>
+          <span class="pill">Country: All <span class="x">×</span></span>
+          <span class="pill">Product: All Express <span class="x">×</span></span>
+          <span class="pill">Time: Last 12 Months <span class="x">×</span></span>
+          <button class="clear" id="clearAll">Clear All</button>
+        </div>
+      </div>
+
+      <div id="panel" class="panel">
+        <div class="panel-top">
+          <input class="panel-search" placeholder="Search filters..." />
+          <div class="panel-actions">
+            <button class="linkbtn" id="saveView">▣&nbsp; Save View</button>
+            <button class="linkbtn" id="manageViews">Manage Views</button>
+            <button class="apply" id="applyBtn">Apply Filters</button>
+          </div>
+        </div>
+
+        <div class="group expanded">
+          <div class="group-head"><span class="gicon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.92 9h-3.05a15.7 15.7 0 0 0-1.33-5.02A8.04 8.04 0 0 1 18.92 11ZM12 4c.83 0 2.17 2.49 2.78 7H9.22C9.83 6.49 11.17 4 12 4Zm-2.54 1.98A15.7 15.7 0 0 0 8.13 11H5.08a8.04 8.04 0 0 1 4.38-5.02ZM5.08 13h3.05a15.7 15.7 0 0 0 1.33 5.02A8.04 8.04 0 0 1 5.08 13ZM12 20c-.83 0-2.17-2.49-2.78-7h5.56c-.61 4.51-1.95 7-2.78 7Zm2.54-1.98A15.7 15.7 0 0 0 15.87 13h3.05a8.04 8.04 0 0 1-4.38 5.02Z"/></svg>
+    </span><b>Geography</b><span class="sel">2 selected &nbsp;⌃</span></div>
+          <div class="group-body">
+            <label class="option"><input type="checkbox" checked> United States</label>
+            <label class="option"><input type="checkbox" checked> All Countries</label>
+            <label class="option"><input type="checkbox"> Region</label>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-head"><span class="gicon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2 3 6.5v11L12 22l9-4.5v-11L12 2Zm0 2.24 6.4 3.2L12 10.64 5.6 7.44 12 4.24ZM5 9.05l6 3v7.43l-6-3V9.05Zm8 10.43v-7.43l6-3v7.43l-6 3Z"/></svg>
+    </span><b>Product</b><span class="sel">1 selected &nbsp;⌄</span></div>
+          <div class="group-body">
+            <label class="option"><input type="checkbox" checked> All Express</label>
+            <label class="option"><input type="checkbox"> Ground</label>
+            <label class="option"><input type="checkbox"> Freight</label>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-head"><span class="gicon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>
+    </span><b>Customer</b><span class="sel">0 selected &nbsp;⌄</span></div>
+          <div class="group-body">
+            <label class="option"><input type="checkbox"> Strategic</label>
+            <label class="option"><input type="checkbox"> Enterprise</label>
+            <label class="option"><input type="checkbox"> Growth</label>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-head"><span class="gicon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h2.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H7V2Zm12.5 8h-15v9.5c0 .28.22.5.5.5h14c.28 0 .5-.22.5-.5V10ZM5 6c-.28 0-.5.22-.5.5V8h15V6.5c0-.28-.22-.5-.5-.5H17v1h-2V6H9v1H7V6H5Z"/></svg>
+    </span><b>Time</b><span class="sel">1 selected &nbsp;⌄</span></div>
+          <div class="group-body">
+            <label class="option"><input type="checkbox" checked> Last 12 Months</label>
+            <label class="option"><input type="checkbox"> Current Quarter</label>
+            <label class="option"><input type="checkbox"> Fiscal Year</label>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-head"><span class="gicon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M4 6h10v2H4V6Zm0 10h10v2H4v-2Zm6-5h10v2H10v-2Zm6-6h2v2h-2V5ZM6 15h2v2H6v-2Zm2-5h2v4H8v-4Zm8 0h2v4h-2v-4Z"/></svg>
+    </span><b>More Filters</b><span class="sel">8+ available &nbsp;⌄</span></div>
+          <div class="group-body">
+            <label class="option"><input type="checkbox"> Sales Segment</label>
+            <label class="option"><input type="checkbox"> Account Status</label>
+            <label class="option"><input type="checkbox"> Revenue Band</label>
+          </div>
+        </div>
+        <div class="panel-bottom">
+          <button class="apply" id="applyBtnBottom">Apply Filters</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="content" class="content">
+      <div id="empty" class="empty"></div>
+      <div id="dashboard" class="dashboard">
+        <div class="section-title">KEY STATS AND TRENDS</div>
+        <div class="metric-tabs">
+          <button class="metric-tab active">Total Rev</button><button class="metric-tab">Total Vol</button>
+          <button class="metric-tab">Total Weight</button><button class="metric-tab">ADNR</button>
+          <button class="metric-tab">ADV</button><button class="metric-tab">ADW</button>
+        </div>
+        <div class="dashgrid">
+          <div>
+            <div class="statcard"><div class="statbig">48.8M</div><div class="statlabel">CY Rev $</div></div>
+            <div class="statcard"><div class="statbig">51.5M</div><div class="statlabel">PY Rev $</div></div>
+            <div class="statcard"><div class="statbig negative">▼ -2.7M</div><div class="statlabel negative">Rev YoY $</div></div>
+          </div>
+          <div>
+            <div class="chart-title">Revenue Trend</div>
+            <div class="legend">■ CY Rev &nbsp;&nbsp; — PY Rev</div>
+            <div class="chart"><div class="bars">
+              <div class="bar" style="height:55%"><span>3.4M</span></div><div class="bar" style="height:66%"><span>3.7M</span></div>
+              <div class="bar" style="height:63%"><span>3.6M</span></div><div class="bar" style="height:68%"><span>3.8M</span></div>
+              <div class="bar" style="height:62%"><span>3.5M</span></div><div class="bar" style="height:72%"><span>3.9M</span></div>
+              <div class="bar" style="height:57%"><span>3.4M</span></div><div class="bar" style="height:67%"><span>3.7M</span></div>
+              <div class="bar" style="height:69%"><span>3.7M</span></div><div class="bar" style="height:72%"><span>3.9M</span></div>
+              <div class="bar" style="height:82%"><span>4.3M</span></div><div class="bar" style="height:78%"><span>4.2M</span></div>
+              <div class="bar" style="height:65%"><span>3.7M</span></div>
+            </div></div>
+          </div>
+          <div class="growth">
+            <div class="chart-title">% YoY Growth</div>
+            <div class="legend">&nbsp;</div>
+            <div class="chart"><div class="bars">
+              <div class="bar neg" style="height:25%"></div><div class="bar neg" style="height:18%"></div>
+              <div class="bar neg" style="height:32%"></div><div class="bar neg" style="height:28%"></div>
+              <div class="bar neg" style="height:21%"></div><div class="bar neg" style="height:31%"></div>
+              <div class="bar neg" style="height:27%"></div><div class="bar neg" style="height:15%"></div>
+              <div class="bar pos" style="height:14%"></div><div class="bar pos" style="height:34%"></div>
+              <div class="bar pos" style="height:88%"></div><div class="bar pos" style="height:18%"></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div class="prototype-note"><b>Prototype:</b> Filters → choose/expand options → Apply Filters</div>
+
+<script>
+const filterBtn = document.getElementById('filterBtn');
+const panel = document.getElementById('panel');
+const active = document.getElementById('activeFilters');
+const count = document.getElementById('filterCount');
+const applyBtn = document.getElementById('applyBtn');
+const applyBtnBottom = document.getElementById('applyBtnBottom');
+const dash = document.getElementById('dashboard');
+const empty = document.getElementById('empty');
+const toast = document.getElementById('toast');
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),1500);
+}
+filterBtn.addEventListener('click',()=>{
+  panel.classList.toggle('open');
+  active.classList.toggle('show', panel.classList.contains('open') || dash.classList.contains('show'));
+  count.style.display = (panel.classList.contains('open') || dash.classList.contains('show')) ? 'inline-flex':'none';
+});
+document.querySelectorAll('.group-head').forEach(h=>{
+  h.addEventListener('click',()=>h.parentElement.classList.toggle('expanded'));
+});
+function applyFilters(){
+  dash.classList.add('show');
+  empty.style.display='none';
+  panel.classList.remove('open');
+  active.classList.add('show');
+  count.style.display='inline-flex';
+  showToast('Filters applied');
+}
+applyBtn.addEventListener('click', applyFilters);
+applyBtnBottom.addEventListener('click', applyFilters);
+
+document.querySelectorAll('.pill .x').forEach(x=>{
+  x.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    const pill = x.closest('.pill');
+    if (pill) pill.remove();
+    const remaining = document.querySelectorAll('#activeFilters .pill').length;
+    if (remaining > 0) {
+      count.textContent = remaining;
+      count.style.display = 'inline-flex';
+    } else {
+      active.classList.remove('show');
+      count.style.display = 'none';
+      dash.classList.remove('show');
+      empty.style.display = 'block';
+    }
+    showToast('Filter removed');
+  });
+});
+
+document.getElementById('clearAll').addEventListener('click',()=>{
+  dash.classList.remove('show');
+  empty.style.display='block';
+  active.classList.remove('show');
+  count.style.display='none';
+  document.querySelectorAll('.option input').forEach(x=>x.checked=false);
+  showToast('Filters cleared');
+});
+document.getElementById('saveView').addEventListener('click',()=>showToast('View saved'));
+document.getElementById('manageViews').addEventListener('click',()=>showToast('Manage Views opened'));
+document.querySelectorAll('.metric-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.metric-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    showToast(btn.textContent + ' selected');
+  });
+});
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
